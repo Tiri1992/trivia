@@ -3,3 +3,6 @@ class QuestionsNotEmptyError(Exception):
 
 class QuestionsEmptyError(Exception):
     pass 
+
+class NotEnoughPlayersError(Exception):
+    pass 

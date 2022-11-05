@@ -1,4 +1,5 @@
 from category import Category, position_category
+from errors import NotEnoughPlayersError
 from player import Player
 from questions import Question
 
@@ -14,7 +15,8 @@ class Game:
 
 
     def create(self) -> None:
-        # TODO: Validate if game is playable with no. players
+        if not self.is_playable():
+            raise NotEnoughPlayersError(f"Insufficient players to create game. Total players must be greater than 2, currently at {len(self._players)}")
         self._pop_questions.create()
         self._science_questions.create()
         self._sports_questions.create()
@@ -76,7 +78,7 @@ class Game:
                 self.current_player.add_purse()
                 self.current_player.display_coins()
                 # TODO: Remove delegate, call the current_player.has_won() directly
-                winner = self._did_player_win()
+                winner = self.current_player.has_won()
                 self.next_player()                
                 return winner
             else:
@@ -86,7 +88,7 @@ class Game:
             print("Answer was corrent!!!!")
             self.current_player.add_purse()
             self.current_player.display_coins()
-            winner = self._did_player_win()
+            winner = self.current_player.has_won()
             self.next_player()            
             return winner
     
@@ -99,9 +101,6 @@ class Game:
         self.current_player.move_in_penalty_box()
         self.next_player()
         return True
-    
-    def _did_player_win(self):
-        return self.current_player.has_won()
 
     def get_players_in_penalty_box(self) -> list[Player]:
         return [player for player in self._players if player.in_penalty_box]
@@ -112,11 +111,13 @@ from random import randrange
 if __name__ == '__main__':
     not_a_winner = False
 
-    game = Game()
+    players = [ 
+        Player(name="Chet", place=0),
+        Player(name="Pat", place=0),
+        Player(name="Sue", place=0),
+    ]
 
-    game.add('Chet')
-    game.add('Pat')
-    game.add('Sue')
+    game = Game(players=players)
 
     while True:
         game.roll(randrange(5) + 1)

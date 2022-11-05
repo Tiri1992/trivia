@@ -1,8 +1,8 @@
 from trivia import Game
 from category import Category
 from player import Player
+from errors import NotEnoughPlayersError
 import pytest
-
 
 @pytest.fixture(scope="function")
 def init_game_with_players() -> Game:
@@ -14,12 +14,13 @@ def init_game_with_players() -> Game:
         players=players,
     )
 
-def test_game_is_playable():
+def test_game_create_raises():
     game = Game(
         players=[Player(name="John", place=0)]
     )
     
-    assert game.is_playable() == False 
+    with pytest.raises(NotEnoughPlayersError) as err:
+        game.create()
 
 def test_game_current_category(init_game_with_players: Game):
 
