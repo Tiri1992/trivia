@@ -36,17 +36,14 @@ class Game:
         print("%s is the current player" % self.current_player)
         print("They have rolled a %s" % roll)
         
-        # Manage player state in a separate object (SRP)
-        # Client code can delegate calls to Player object to check state
         if self.current_player.in_penalty_box:
             if roll % 2 != 0:
-                self.current_player.move_out_penalty_box()
                 print("%s is getting out of the penalty box" % self.current_player)
                 self.current_player.move_place(count=roll)
                 print(self.current_player.display_place())
-                # TODO: Fix current category
                 print("The category is %s" % self._current_category)
                 self._ask_question()
+                self.current_player.move_out_penalty_box()
             else:
                 print("%s is not getting out of the penalty box" % self.current_player)
                 
@@ -71,44 +68,36 @@ class Game:
     def _current_category(self) -> str | None:
         return position_category.get(self.current_player.place)
 
-    def was_correctly_answered(self):
-        if self.current_player.in_penalty_box:
-            if self.current_player.is_getting_out_of_penalty_box:
-                print('Answer was correct!!!!')
-                self.current_player.add_purse()
-                self.current_player.display_coins()
-                # TODO: Remove delegate, call the current_player.has_won() directly
-                winner = self.current_player.has_won()
-                self.next_player()                
-                return winner
-            else:
-                self.next_player()
-                return True
-        else:
-            print("Answer was corrent!!!!")
+    def was_correctly_answered(self) -> Player:
+        if not self.current_player.in_penalty_box:
+            print('Answer was correct!!!!')
             self.current_player.add_purse()
             self.current_player.display_coins()
             winner = self.current_player.has_won()
-            self.next_player()            
+            self.next_player()                
             return winner
+        print(f"{self.current_player} still in penalty box.")
     
     def next_player(self) -> None:
         self._current_player_index = (self._current_player_index + 1) % self.get_number_of_players()
     
     def wrong_answer(self):
-        print('Question was incorrectly answered')
-        print(self.current_player.display_in_penalty_box())
-        self.current_player.move_in_penalty_box()
-        self.next_player()
-        return True
+        if not self.current_player.in_penalty_box:
+            print('Question was incorrectly answered')
+            print(self.current_player.display_in_penalty_box())
+            self.current_player.move_in_penalty_box()
+            self.next_player()
+            return True
+        return False
 
     def get_players_in_penalty_box(self) -> list[Player]:
         return [player for player in self._players if player.in_penalty_box]
 
 
-from random import randrange
 
 if __name__ == '__main__':
+    from random import randrange
+    
     not_a_winner = False
 
     players = [ 
@@ -118,11 +107,12 @@ if __name__ == '__main__':
     ]
 
     game = Game(players=players)
+    game.create()
 
     while True:
         game.roll(randrange(5) + 1)
         # First Wrong Answer, will break out of loop
-        if randrange(9) == 7:
+        if randrange(5) == 2:
             not_a_winner = game.wrong_answer()
         else:
             not_a_winner = game.was_correctly_answered()

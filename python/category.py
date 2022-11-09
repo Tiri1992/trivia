@@ -8,6 +8,9 @@ class Category(IntEnum):
     SPORTS = 3
     ROCK = 4
 
+    def __str__(self) -> str:
+        return super().name
+
 
 position_category: dict[int, Category] = {
     0: Category.POP,
